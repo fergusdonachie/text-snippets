@@ -2,6 +2,8 @@
   "use strict";
 
   const STORAGE_KEY = "textSnippets.local.v1";
+  // Added to the end of every message so patients know who it is from.
+  const SIGN_OFF = "Annan North Surgery";
 
   const listEl = document.getElementById("snippet-list");
   const emptyEl = document.getElementById("empty");
@@ -42,6 +44,11 @@
       ...sharedSnippets.map((s) => ({ ...s, local: false })),
       ...localSnippets.map((s) => ({ ...s, local: true })),
     ];
+  }
+
+  function withSignOff(text) {
+    const trimmed = text.trim();
+    return trimmed.toLowerCase().endsWith(SIGN_OFF.toLowerCase()) ? trimmed : `${trimmed}\n${SIGN_OFF}`;
   }
 
   function newId() {
@@ -96,7 +103,7 @@
     copyBtn.type = "button";
     copyBtn.className = "primary copy-btn";
     copyBtn.textContent = "Copy";
-    copyBtn.addEventListener("click", () => copySnippet(snippet.text, copyBtn));
+    copyBtn.addEventListener("click", () => copySnippet(withSignOff(snippet.text), copyBtn));
     actions.append(copyBtn);
 
     if (snippet.local) {
@@ -117,7 +124,7 @@
 
     const text = document.createElement("p");
     text.className = "snippet-text";
-    text.textContent = snippet.text;
+    text.textContent = withSignOff(snippet.text);
 
     li.append(head, text, actions);
     return li;
@@ -192,7 +199,7 @@
   }
 
   function updateCharCount() {
-    charCountEl.textContent = fields.text.value.length;
+    charCountEl.textContent = withSignOff(fields.text.value).length;
   }
 
   function saveFromForm() {

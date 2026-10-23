@@ -12,6 +12,8 @@ No build step, no database, no patient data — it's plain HTML, CSS and JavaScr
 
 ## Adding snippets
 
+Every message automatically ends with "Annan North Surgery" on a new line (set by `SIGN_OFF` in `app.js`), so don't type it into the snippet text.
+
 There are two kinds of snippet:
 
 - **Shared snippets** live in [`snippets.json`](snippets.json) and are seen by everyone. Edit the file on GitHub (pencil icon), add an entry like the one below, and commit — Vercel redeploys within a minute.
