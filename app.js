@@ -119,7 +119,7 @@
     text.className = "snippet-text";
     text.textContent = snippet.text;
 
-    li.append(head, actions, text);
+    li.append(head, text, actions);
     return li;
   }
 
