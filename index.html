@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Patient Text Snippets</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <h1>Patient Text Snippets</h1>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search snippets…" aria-label="Search snippets">
+      <select id="category-filter" aria-label="Filter by category">
+        <option value="">All categories</option>
+      </select>
+      <button id="add-btn" class="primary" type="button">+ Add snippet</button>
+    </div>
+  </header>
+
+  <main>
+    <ul id="snippet-list" class="snippet-list"></ul>
+    <p id="empty" class="empty" hidden>No snippets match your search.</p>
+
+    <details class="admin">
+      <summary>Share or back up your snippets</summary>
+      <p>
+        Snippets you add are saved in this browser only. To share them with the team, click
+        <strong>Export</strong> and send the file to whoever maintains the app, who can add them to
+        <code>snippets.json</code> in the GitHub repository.
+      </p>
+      <div class="admin-actions">
+        <button id="export-btn" type="button">Export all snippets</button>
+        <label class="file-btn">
+          Import snippets
+          <input id="import-input" type="file" accept="application/json,.json">
+        </label>
+      </div>
+    </details>
+  </main>
+
+  <dialog id="editor">
+    <form id="editor-form" method="dialog">
+      <h2 id="editor-heading">Add snippet</h2>
+      <label>
+        Title
+        <input name="title" required maxlength="100" placeholder="e.g. Contraception review due">
+      </label>
+      <label>
+        Category
+        <input name="category" list="category-options" maxlength="50" placeholder="e.g. Reviews">
+        <datalist id="category-options"></datalist>
+      </label>
+      <label>
+        Message text
+        <textarea name="text" required rows="6" placeholder="Type the message exactly as it should be sent to the patient"></textarea>
+      </label>
+      <p class="char-count"><span id="char-count">0</span> characters</p>
+      <div class="dialog-actions">
+        <button type="button" id="cancel-btn">Cancel</button>
+        <button type="submit" class="primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

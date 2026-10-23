@@ -1,0 +1,252 @@
+:root {
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --text: #1d2733;
+  --muted: #5b6875;
+  --border: #d5dbe1;
+  --primary: #005eb8;
+  --primary-hover: #004b93;
+  --success: #007f3b;
+  --danger: #b3261e;
+  --radius: 8px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.45;
+}
+
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--primary);
+  color: #fff;
+  padding: 12px 16px;
+}
+
+.top h1 {
+  margin: 0 0 10px;
+  font-size: 1.3rem;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.toolbar input[type="search"] {
+  flex: 1 1 220px;
+}
+
+input, select, textarea, button {
+  font: inherit;
+}
+
+input, select, textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--text);
+}
+
+button, .file-btn {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+}
+
+button:hover, .file-btn:hover { background: #eef1f4; }
+
+button.primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+button.primary:hover { background: var(--primary-hover); }
+
+.top button.primary {
+  background: #fff;
+  color: var(--primary);
+  border-color: #fff;
+}
+.top button.primary:hover { background: #e8f0f9; }
+
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.snippet-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.snippet {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 16px;
+  align-items: start;
+}
+
+.snippet-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.snippet h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.tag {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #e8f0f9;
+  color: var(--primary);
+}
+
+.tag.local {
+  background: #fff4e0;
+  color: #8a5300;
+}
+
+.snippet-text {
+  grid-column: 1 / -1;
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.snippet-actions {
+  display: flex;
+  gap: 6px;
+  grid-row: 1;
+  grid-column: 2;
+}
+
+.copy-btn {
+  min-width: 90px;
+}
+
+.copy-btn.copied {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.small {
+  padding: 6px 10px;
+  font-size: 0.85rem;
+}
+
+.danger { color: var(--danger); }
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+}
+
+.admin {
+  margin-top: 32px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.admin summary { cursor: pointer; }
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.file-btn input { display: none; }
+
+dialog {
+  border: none;
+  border-radius: var(--radius);
+  padding: 0;
+  width: min(560px, calc(100% - 32px));
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+}
+
+dialog::backdrop { background: rgba(0, 0, 0, 0.4); }
+
+dialog form {
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+}
+
+dialog h2 { margin: 0; }
+
+dialog label {
+  display: grid;
+  gap: 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+dialog label input, dialog label textarea {
+  font-weight: normal;
+  width: 100%;
+}
+
+.char-count {
+  margin: -6px 0 0;
+  text-align: right;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--text);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 560px) {
+  .snippet { grid-template-columns: 1fr; }
+  .snippet-actions { grid-row: auto; grid-column: 1; }
+}
