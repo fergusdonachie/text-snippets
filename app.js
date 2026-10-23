@@ -3,7 +3,10 @@
 
   // Snippets saved in this browser by earlier versions of the app, before the shared store existed.
   const LEGACY_STORAGE_KEY = "textSnippets.local.v1";
-  const PIN_STORAGE_KEY = "textSnippets.pin";
+  // Earlier versions remembered the PIN here; it is now only kept while editing.
+  const OLD_PIN_STORAGE_KEY = "textSnippets.pin";
+  // Leave edit mode automatically if a PC is left unattended.
+  const EDIT_MODE_TIMEOUT_MS = 10 * 60 * 1000;
   // Added to the end of every message so patients know who it is from.
   const SIGN_OFF = "Annan North Surgery";
 
@@ -13,6 +16,7 @@
   const categoryFilterEl = document.getElementById("category-filter");
   const categoryOptionsEl = document.getElementById("category-options");
   const addBtn = document.getElementById("add-btn");
+  const manageBtn = document.getElementById("manage-btn");
   const editNoteEl = document.getElementById("edit-note");
   const legacyBannerEl = document.getElementById("legacy-banner");
   const legacyTextEl = document.getElementById("legacy-text");
@@ -29,11 +33,12 @@
   const pinForm = document.getElementById("pin-form");
   const pinInput = document.getElementById("pin-input");
   const pinError = document.getElementById("pin-error");
-  const forgetPinBtn = document.getElementById("forget-pin-btn");
 
   let snippets = [];
   let legacySnippets = loadLegacy();
+  // editable: this PC may make changes (on the NHS network). editMode: changes are switched on.
   let editable = false;
+  let editMode = false;
   let loaded = false;
   let pinRequired = false;
   let statusNote = "";
@@ -57,24 +62,13 @@
     legacySnippets = [];
   }
 
-  function storedPin() {
-    try {
-      return localStorage.getItem(PIN_STORAGE_KEY) || "";
-    } catch {
-      return "";
-    }
+  try {
+    localStorage.removeItem(OLD_PIN_STORAGE_KEY);
+  } catch {
+    // Nothing to clear if storage is unavailable.
   }
 
-  function storePin(pin) {
-    try {
-      if (pin) localStorage.setItem(PIN_STORAGE_KEY, pin);
-      else localStorage.removeItem(PIN_STORAGE_KEY);
-    } catch {
-      // Without storage the PIN is asked for each time.
-    }
-  }
-
-  let sessionPin = storedPin();
+  let sessionPin = "";
 
   function allSnippets() {
     return [
@@ -102,18 +96,27 @@
   }
 
   function renderAll() {
-    addBtn.hidden = !editable;
-    editNoteEl.hidden = !statusNote;
-    editNoteEl.textContent = statusNote;
-    forgetPinBtn.hidden = !(editable && pinRequired && sessionPin);
-    importLabel.hidden = !editable;
+    if (!editable) editMode = false;
+    manageBtn.hidden = !editable;
+    manageBtn.textContent = editMode ? "Done editing" : "Add / edit snippets";
+    addBtn.hidden = !editMode;
+    importLabel.hidden = !editMode;
+    document.body.classList.toggle("editing", editMode);
+
+    const note = editMode
+      ? "Editing is on – changes apply for everyone. Click “Done editing” when finished."
+      : statusNote;
+    editNoteEl.hidden = !note;
+    editNoteEl.textContent = note;
 
     legacyBannerEl.hidden = legacySnippets.length === 0;
-    migrateBtn.hidden = !editable;
+    migrateBtn.hidden = !editMode;
     const count = `${legacySnippets.length} snippet${legacySnippets.length === 1 ? " is" : "s are"}`;
-    legacyTextEl.textContent = editable
-      ? `${count} saved only in this browser. Move them to the shared list so the whole team can use them.`
-      : `${count} saved only in this browser. Open this page on the NHS network to move them to the shared list.`;
+    legacyTextEl.textContent = !editable
+      ? `${count} saved only in this browser. Open this page on the NHS network to move them to the shared list.`
+      : editMode
+        ? `${count} saved only in this browser. Move them to the shared list so the whole team can use them.`
+        : `${count} saved only in this browser. Click “Add / edit snippets” to move them to the shared list.`;
 
     renderCategories();
     render();
@@ -157,7 +160,7 @@
     copyBtn.addEventListener("click", () => copySnippet(withSignOff(snippet.text), copyBtn));
     actions.append(copyBtn);
 
-    if (editable && !snippet.local) {
+    if (editMode && !snippet.local) {
       const editBtn = document.createElement("button");
       editBtn.type = "button";
       editBtn.className = "small";
@@ -249,10 +252,7 @@
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      if (res.status === 401) {
-        sessionPin = "";
-        storePin("");
-      }
+      if (res.status === 401) sessionPin = "";
       if (res.status === 403) {
         editable = false;
         statusNote = networkNote(data.ip);
@@ -289,7 +289,6 @@
     sessionPin = pin;
     try {
       await api("POST", { action: "verify-pin" });
-      storePin(pin);
       pinDialog.close();
       renderAll();
     } catch (err) {
@@ -298,6 +297,35 @@
       pinError.hidden = false;
       pinInput.select();
     }
+  }
+
+  async function toggleEditMode() {
+    if (editMode) {
+      exitEditMode();
+      return;
+    }
+    if (!(await ensurePin())) return;
+    editMode = true;
+    touchEditMode();
+    renderAll();
+  }
+
+  function exitEditMode() {
+    editMode = false;
+    sessionPin = "";
+    clearTimeout(editModeTimer);
+    renderAll();
+  }
+
+  let editModeTimer;
+  function touchEditMode() {
+    if (!editMode) return;
+    clearTimeout(editModeTimer);
+    editModeTimer = setTimeout(() => {
+      if (dialog.open) dialog.close();
+      exitEditMode();
+      showToast("Editing switched off after 10 minutes without activity");
+    }, EDIT_MODE_TIMEOUT_MS);
   }
 
   // Runs a change, asking for the PIN first if needed, and again if the saved PIN has been changed.
@@ -474,12 +502,9 @@
   migrateBtn.addEventListener("click", migrateLegacy);
   pinForm.addEventListener("submit", submitPin);
   document.getElementById("pin-cancel-btn").addEventListener("click", () => pinDialog.close());
-  forgetPinBtn.addEventListener("click", () => {
-    sessionPin = "";
-    storePin("");
-    renderAll();
-    showToast("PIN forgotten on this PC");
-  });
+  manageBtn.addEventListener("click", toggleEditMode);
+  document.addEventListener("click", touchEditMode);
+  document.addEventListener("keydown", touchEditMode);
   form.addEventListener("submit", saveFromForm);
   fields.text.addEventListener("input", updateCharCount);
   searchEl.addEventListener("input", render);

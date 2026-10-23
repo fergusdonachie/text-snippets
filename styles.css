@@ -88,6 +88,17 @@ button.primary:hover { background: var(--primary-hover); }
 }
 .top button.primary:hover { background: #e8f0f9; }
 
+.top .manage-btn {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.7);
+  color: #fff;
+}
+.top .manage-btn:hover { background: rgba(255, 255, 255, 0.15); }
+
+/* A clear cue that changes will affect everyone. */
+body.editing .top { background: #7c2855; }
+body.editing .top button.primary { color: #7c2855; }
+
 main {
   max-width: 1400px;
   margin: 0 auto;
@@ -278,26 +289,5 @@ dialog label input, dialog label textarea {
 }
 
 @media (max-width: 400px) {
-  .edit-note {
-  margin: 8px 0 0;
-  font-size: 0.85rem;
-  opacity: 0.9;
-}
-
-.banner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 16px;
-  margin-bottom: 16px;
-  padding: 12px 14px;
-  border: 1px solid #f0c36d;
-  border-radius: var(--radius);
-  background: #fff4e0;
-}
-
-[hidden] { display: none !important; }
-
-.snippet-list { grid-template-columns: 1fr; }
+  .snippet-list { grid-template-columns: 1fr; }
 }
