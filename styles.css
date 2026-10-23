@@ -226,6 +226,13 @@ dialog form {
 
 dialog h2 { margin: 0; }
 
+dialog p { margin: 0; }
+
+.form-error {
+  color: var(--danger);
+  font-size: 0.9rem;
+}
+
 dialog label {
   display: grid;
   gap: 4px;

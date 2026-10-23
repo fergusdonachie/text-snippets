@@ -17,7 +17,7 @@
         </select>
         <button id="add-btn" class="primary" type="button" hidden>+ Add snippet</button>
       </div>
-      <p id="edit-note" class="edit-note" hidden>Snippets can only be added or changed from a PC on the NHS network.</p>
+      <p id="edit-note" class="edit-note" hidden></p>
     </div>
   </header>
 
@@ -33,7 +33,7 @@
       <summary>Back up or import snippets</summary>
       <p>
         Snippets are shared with everyone who uses this page. They can be added, edited and deleted from any PC on the
-        NHS network. Use <strong>Export</strong> to download a backup copy.
+        NHS network, using the practice PIN. Use <strong>Export</strong> to download a backup copy.
       </p>
       <div class="admin-actions">
         <button id="export-btn" type="button">Export all snippets</button>
@@ -41,6 +41,7 @@
           Import snippets
           <input id="import-input" type="file" accept="application/json,.json">
         </label>
+        <button id="forget-pin-btn" type="button" hidden>Forget PIN on this PC</button>
       </div>
     </details>
   </main>
@@ -65,6 +66,22 @@
       <div class="dialog-actions">
         <button type="button" id="cancel-btn">Cancel</button>
         <button type="submit" class="primary" id="save-btn">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="pin-dialog">
+    <form id="pin-form">
+      <h2>Practice PIN</h2>
+      <p>Enter the practice PIN to add or change snippets. It will be remembered on this PC.</p>
+      <label>
+        PIN
+        <input id="pin-input" type="password" autocomplete="off" inputmode="numeric" required>
+      </label>
+      <p id="pin-error" class="form-error" role="alert" hidden></p>
+      <div class="dialog-actions">
+        <button type="button" id="pin-cancel-btn">Cancel</button>
+        <button type="submit" class="primary">Continue</button>
       </div>
     </form>
   </dialog>

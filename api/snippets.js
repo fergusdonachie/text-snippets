@@ -1,16 +1,24 @@
-// Shared snippet store. Anyone can read; only requests from allowed IP ranges
-// (the NHS network) can add, edit or delete.
+// Shared snippet store. Anyone can read; changes need a request from an allowed
+// IP range (the NHS network) and, if EDIT_PIN is set, the practice PIN.
 const crypto = require("crypto");
-const defaultSnippets = require("../snippets.json");
+const starter = require("../snippets.json");
 
 const HASH_KEY = "snippets";
-const SEEDED_KEY = "snippets:seeded";
+const VERSION_KEY = "snippets:version";
+const LEGACY_SEEDED_KEY = "snippets:seeded";
 const ALLOWED_RANGES = (process.env.ALLOWED_IP_RANGES || "62.6.52.0/24")
   .split(",")
   .map((r) => r.trim())
   .filter(Boolean);
+const EDIT_PIN = (process.env.EDIT_PIN || "").trim();
+const MAX_PIN_FAILURES = 10;
+const PIN_LOCKOUT_SECONDS = 15 * 60;
 
 const LIMITS = { title: 100, category: 50, text: 1000 };
+
+// snippets.json is either a plain list or { "version": n, "snippets": [...] }.
+const STARTER_SNIPPETS = Array.isArray(starter) ? starter : starter.snippets || [];
+const STARTER_VERSION = String((!Array.isArray(starter) && starter.version) || 1);
 
 // Upstash Redis via its REST API. The Vercel integration sets the KV_* names.
 const REDIS_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
@@ -53,17 +61,55 @@ function inRange(ip, range) {
   return Math.floor(ipInt / size) === Math.floor(baseInt / size);
 }
 
-function canEdit(req) {
-  const ip = clientIp(req);
+function onNetwork(ip) {
   return ALLOWED_RANGES.some((range) => inRange(ip, range));
 }
 
-async function ensureSeeded() {
-  // First run only: copy the starter snippets from snippets.json into the store.
-  const firstRun = await redis("SET", SEEDED_KEY, "1", "NX");
-  if (firstRun !== "OK" || !defaultSnippets.length) return;
-  const args = defaultSnippets.flatMap((s) => [s.id, JSON.stringify(clean(s))]);
-  await redis("HSET", HASH_KEY, ...args);
+function pinMatches(given) {
+  const a = crypto.createHash("sha256").update(String(given || "")).digest();
+  const b = crypto.createHash("sha256").update(EDIT_PIN).digest();
+  return crypto.timingSafeEqual(a, b);
+}
+
+// Returns null if the PIN is fine, otherwise [status, message].
+async function checkPin(req, ip) {
+  if (!EDIT_PIN) return null;
+  const failKey = `pinfail:${ip}`;
+  const failures = Number(await redis("GET", failKey)) || 0;
+  if (failures >= MAX_PIN_FAILURES) {
+    return [429, "Too many wrong PIN attempts. Please try again in 15 minutes."];
+  }
+  if (pinMatches(req.headers["x-edit-pin"])) return null;
+  await redis("INCR", failKey);
+  await redis("EXPIRE", failKey, PIN_LOCKOUT_SECONDS);
+  return [401, "Incorrect PIN"];
+}
+
+// Load snippets.json into the store on first run, and again whenever its version number changes.
+async function syncStarter() {
+  const stored = await redis("GET", VERSION_KEY);
+  if (stored === STARTER_VERSION) return;
+
+  if (stored === null && (await redis("EXISTS", LEGACY_SEEDED_KEY))) {
+    // Store was filled by an earlier release: keep its contents and start tracking versions.
+    await redis("SET", VERSION_KEY, STARTER_VERSION);
+    await redis("DEL", LEGACY_SEEDED_KEY);
+    return;
+  }
+
+  // Claim the update so concurrent requests don't all reset the store.
+  const claimed = await redis("SET", `${VERSION_KEY}:lock`, "1", "NX", "EX", 30);
+  if (claimed !== "OK") return;
+  await redis("DEL", HASH_KEY);
+  if (STARTER_SNIPPETS.length) {
+    const args = STARTER_SNIPPETS.filter((s) => s && s.title && s.text).flatMap((s) => [
+      s.id ? String(s.id) : crypto.randomUUID(),
+      JSON.stringify(clean(s)),
+    ]);
+    if (args.length) await redis("HSET", HASH_KEY, ...args);
+  }
+  await redis("SET", VERSION_KEY, STARTER_VERSION);
+  await redis("DEL", `${VERSION_KEY}:lock`);
 }
 
 async function listSnippets() {
@@ -90,16 +136,22 @@ function clean(input) {
 
 module.exports = async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
+  const ip = clientIp(req);
 
   if (!REDIS_URL || !REDIS_TOKEN) {
-    return res.status(503).json({ error: "Snippet storage is not configured" });
+    return res.status(503).json({ error: "Snippet storage is not configured", reason: "no-storage", ip });
   }
 
   try {
-    await ensureSeeded();
+    await syncStarter();
 
     if (req.method === "GET") {
-      return res.status(200).json({ snippets: await listSnippets(), canEdit: canEdit(req) });
+      return res.status(200).json({
+        snippets: await listSnippets(),
+        canEdit: onNetwork(ip),
+        pinRequired: Boolean(EDIT_PIN),
+        ip,
+      });
     }
 
     if (!["POST", "PUT", "DELETE"].includes(req.method)) {
@@ -107,11 +159,19 @@ module.exports = async function handler(req, res) {
       return res.status(405).json({ error: "Method not allowed" });
     }
 
-    if (!canEdit(req)) {
-      return res.status(403).json({ error: "Snippets can only be changed from the NHS network" });
+    if (!onNetwork(ip)) {
+      return res.status(403).json({ error: "Snippets can only be changed from the NHS network", ip });
     }
 
+    const pinProblem = await checkPin(req, ip);
+    if (pinProblem) return res.status(pinProblem[0]).json({ error: pinProblem[1] });
+
     const body = req.body || {};
+
+    // Lets the page confirm a PIN before remembering it.
+    if (req.method === "POST" && body.action === "verify-pin") {
+      return res.status(200).json({ ok: true });
+    }
 
     if (req.method === "DELETE") {
       if (typeof body.id !== "string") return res.status(400).json({ error: "Missing id" });
@@ -137,6 +197,6 @@ module.exports = async function handler(req, res) {
     return res.status(201).json({ snippet: { ...snippet, id } });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Something went wrong saving snippets" });
+    return res.status(500).json({ error: "Something went wrong with the snippet store", reason: "storage-error" });
   }
 };

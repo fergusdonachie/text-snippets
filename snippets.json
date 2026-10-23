@@ -1,50 +1,13 @@
-[
-  {
-    "id": "contraception-review",
-    "title": "Contraception review due",
-    "category": "Reviews",
-    "text": "You are due a contraception review. Please book an appointment with reception."
-  },
-  {
-    "id": "medication-review",
-    "title": "Medication review due",
-    "category": "Reviews",
-    "text": "You are due a medication review. Please book an appointment with reception so we can continue to issue your repeat prescriptions."
-  },
-  {
-    "id": "asthma-review",
-    "title": "Asthma review due",
-    "category": "Reviews",
-    "text": "You are due your annual asthma review. Please book an appointment with the practice nurse via reception."
-  },
-  {
-    "id": "blood-pressure-check",
-    "title": "Blood pressure check",
-    "category": "Reviews",
-    "text": "You are due a blood pressure check. Please book an appointment with reception, or bring in a home blood pressure reading."
-  },
-  {
-    "id": "blood-test-due",
-    "title": "Blood test due",
-    "category": "Tests",
-    "text": "You are due a blood test. Please book an appointment with reception."
-  },
-  {
-    "id": "results-normal",
-    "title": "Results normal",
-    "category": "Tests",
-    "text": "Your recent test results have been reviewed by the doctor and are normal. No further action is needed."
-  },
-  {
-    "id": "results-discuss",
-    "title": "Results – please book to discuss",
-    "category": "Tests",
-    "text": "The doctor has reviewed your recent test results and would like to discuss them with you. Please book a telephone appointment with reception. This is not urgent."
-  },
-  {
-    "id": "prescription-ready",
-    "title": "Prescription ready",
-    "category": "Prescriptions",
-    "text": "Your prescription has been sent to your nominated pharmacy."
-  }
-]
+{
+  "version": 1,
+  "snippets": [
+    {"id": "contraception-review", "title": "Contraception review due", "category": "Reviews", "text": "You are due a contraception review. Please book an appointment with reception."},
+    {"id": "medication-review", "title": "Medication review due", "category": "Reviews", "text": "You are due a medication review. Please book an appointment with reception so we can continue to issue your repeat prescriptions."},
+    {"id": "asthma-review", "title": "Asthma review due", "category": "Reviews", "text": "You are due your annual asthma review. Please book an appointment with the practice nurse via reception."},
+    {"id": "blood-pressure-check", "title": "Blood pressure check", "category": "Reviews", "text": "You are due a blood pressure check. Please book an appointment with reception, or bring in a home blood pressure reading."},
+    {"id": "blood-test-due", "title": "Blood test due", "category": "Tests", "text": "You are due a blood test. Please book an appointment with reception."},
+    {"id": "results-normal", "title": "Results normal", "category": "Tests", "text": "Your recent test results have been reviewed by the doctor and are normal. No further action is needed."},
+    {"id": "results-discuss", "title": "Results – please book to discuss", "category": "Tests", "text": "The doctor has reviewed your recent test results and would like to discuss them with you. Please book a telephone appointment with reception. This is not urgent."},
+    {"id": "prescription-ready", "title": "Prescription ready", "category": "Prescriptions", "text": "Your prescription has been sent to your nominated pharmacy."}
+  ]
+}
