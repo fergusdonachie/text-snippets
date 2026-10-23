@@ -15,25 +15,29 @@
         <select id="category-filter" aria-label="Filter by category">
           <option value="">All categories</option>
         </select>
-        <button id="add-btn" class="primary" type="button">+ Add snippet</button>
+        <button id="add-btn" class="primary" type="button" hidden>+ Add snippet</button>
       </div>
+      <p id="edit-note" class="edit-note" hidden>Snippets can only be added or changed from a PC on the NHS network.</p>
     </div>
   </header>
 
   <main>
+    <div id="legacy-banner" class="banner" hidden>
+      <span id="legacy-text"></span>
+      <button id="migrate-btn" class="primary" type="button">Move to shared list</button>
+    </div>
     <ul id="snippet-list" class="snippet-list"></ul>
     <p id="empty" class="empty" hidden>No snippets match your search.</p>
 
     <details class="admin">
-      <summary>Share or back up your snippets</summary>
+      <summary>Back up or import snippets</summary>
       <p>
-        Snippets you add are saved in this browser only. To share them with the team, click
-        <strong>Export</strong> and send the file to whoever maintains the app, who can add them to
-        <code>snippets.json</code> in the GitHub repository.
+        Snippets are shared with everyone who uses this page. They can be added, edited and deleted from any PC on the
+        NHS network. Use <strong>Export</strong> to download a backup copy.
       </p>
       <div class="admin-actions">
         <button id="export-btn" type="button">Export all snippets</button>
-        <label class="file-btn">
+        <label id="import-label" class="file-btn" hidden>
           Import snippets
           <input id="import-input" type="file" accept="application/json,.json">
         </label>
@@ -42,7 +46,7 @@
   </main>
 
   <dialog id="editor">
-    <form id="editor-form" method="dialog">
+    <form id="editor-form">
       <h2 id="editor-heading">Add snippet</h2>
       <label>
         Title
@@ -60,7 +64,7 @@
       <p class="char-count">“Annan North Surgery” is added automatically · <span id="char-count">0</span> characters in total</p>
       <div class="dialog-actions">
         <button type="button" id="cancel-btn">Cancel</button>
-        <button type="submit" class="primary">Save</button>
+        <button type="submit" class="primary" id="save-btn">Save</button>
       </div>
     </form>
   </dialog>

@@ -94,6 +94,27 @@ main {
   padding: 16px;
 }
 
+.edit-note {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid #f0c36d;
+  border-radius: var(--radius);
+  background: #fff4e0;
+}
+
+[hidden] { display: none !important; }
+
 .snippet-list {
   list-style: none;
   margin: 0;
@@ -250,5 +271,26 @@ dialog label input, dialog label textarea {
 }
 
 @media (max-width: 400px) {
-  .snippet-list { grid-template-columns: 1fr; }
+  .edit-note {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid #f0c36d;
+  border-radius: var(--radius);
+  background: #fff4e0;
+}
+
+[hidden] { display: none !important; }
+
+.snippet-list { grid-template-columns: 1fr; }
 }
